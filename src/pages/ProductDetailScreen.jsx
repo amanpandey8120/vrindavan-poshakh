@@ -290,7 +290,7 @@ export default function ProductDetailScreen() {
                   <span className="material-symbols-outlined text-[16px]">favorite</span>
                 </button>
               </div>
-              <h3 className="text-sm font-sans text-[#00151b] truncate">{item.title}</h3>
+              <h3 className="text-sm font-serif text-[#00151b] truncate">{item.title}</h3>
               <p className="text-sm font-semibold text-[#41484b] mt-0.5">{item.price}</p>
             </div>
           ))}

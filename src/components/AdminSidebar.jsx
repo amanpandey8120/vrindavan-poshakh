@@ -11,6 +11,7 @@ export default function AdminSidebar({ activeAdminTab }) {
     { id: SCREENS.ADMIN_ORDERS, label: 'Orders', icon: 'shopping_cart' },
     { id: SCREENS.ADMIN_ORDER_DETAILS, label: 'Order Details', icon: 'receipt_long' },
     { id: SCREENS.ADMIN_CUSTOMERS, label: 'Customers', icon: 'group' },
+    { id: SCREENS.ADMIN_USERS, label: 'Users & Access', icon: 'manage_accounts' },
   ];
 
   return (

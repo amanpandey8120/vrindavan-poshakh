@@ -31,6 +31,7 @@ import AdminAddProductScreen from './pages/admin/AdminAddProductScreen';
 import AdminOrdersScreen from './pages/admin/AdminOrdersScreen';
 import AdminOrderDetailsScreen from './pages/admin/AdminOrderDetailsScreen';
 import AdminCustomersScreen from './pages/admin/AdminCustomersScreen';
+import AdminUsersScreen from './pages/admin/AdminUsersScreen';
 
 // Auth screens that don't need auth
 const AUTH_SCREENS = [SCREENS.LOGIN, SCREENS.SIGNUP, SCREENS.FORGOT_PASSWORD];
@@ -44,6 +45,7 @@ const ADMIN_SCREENS = [
   SCREENS.ADMIN_ORDERS,
   SCREENS.ADMIN_ORDER_DETAILS,
   SCREENS.ADMIN_CUSTOMERS,
+  SCREENS.ADMIN_USERS,
 ];
 
 // Protected customer screens (require authentication)
@@ -150,6 +152,8 @@ function MainAppContent() {
         return <AdminOrderDetailsScreen />;
       case SCREENS.ADMIN_CUSTOMERS:
         return <AdminCustomersScreen />;
+      case SCREENS.ADMIN_USERS:
+        return <AdminUsersScreen />;
 
       default:
         return <HomeScreen />;
@@ -158,7 +162,7 @@ function MainAppContent() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#fbf9f4] flex flex-col font-sans text-[#1b1c19]">
+      <div className="min-h-screen bg-[#fbf9f4] flex flex-col text-[#1b1c19]">
         <div className="flex-1 flex items-center justify-center">
           <div className="material-symbols-outlined text-[48px] text-[#735c00] animate-spin">sync</div>
         </div>
@@ -167,7 +171,7 @@ function MainAppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf9f4] flex flex-col font-sans text-[#1b1c19]">
+    <div className="min-h-screen bg-[#fbf9f4] flex flex-col text-[#1b1c19]">
       {/* Customer Store Header */}
       {showMainHeader && <Header />}
 

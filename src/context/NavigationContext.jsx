@@ -31,6 +31,7 @@ export const SCREENS = {
   ADMIN_ORDERS: 'admin-orders',
   ADMIN_ORDER_DETAILS: 'admin-order-details',
   ADMIN_CUSTOMERS: 'admin-customers',
+  ADMIN_USERS: 'admin-users',
 };
 
 export const INITIAL_PRODUCTS = [
