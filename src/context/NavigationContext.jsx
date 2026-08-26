@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 const NavigationContext = createContext(null);
 
 export const SCREENS = {
+  // Customer Storefront Screens
   HOME: 'home',
   HOME_DESKTOP: 'home-desktop',
   CATEGORIES: 'categories',
@@ -14,7 +15,17 @@ export const SCREENS = {
   PRODUCT_DETAIL: 'product-detail',
   FIT_ASSISTANT: 'fit-assistant',
   CART: 'cart',
-  SEARCH: 'search'
+  SEARCH: 'search',
+  ACCOUNT: 'account',
+
+  // Admin Portal Screens (Imported from Stitch)
+  ADMIN_LOGIN: 'admin-login',
+  ADMIN_ANALYTICS: 'admin-analytics',
+  ADMIN_PRODUCTS: 'admin-products',
+  ADMIN_ADD_PRODUCT: 'admin-add-product',
+  ADMIN_ORDERS: 'admin-orders',
+  ADMIN_ORDER_DETAILS: 'admin-order-details',
+  ADMIN_CUSTOMERS: 'admin-customers',
 };
 
 export const INITIAL_PRODUCTS = [
@@ -26,7 +37,7 @@ export const INITIAL_PRODUCTS = [
     originalPrice: 4290,
     rating: 4.9,
     reviewsCount: 48,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJhjdCw8ciLoxMtgvJ592S5dYPacuWLMeo6Q-IGLkQVGfUdh84426ZPksVvBmDrXyiWeFQYKr1xQEb-MRjOnTCoFxW3kzE1XPk0VkBNgLOSx7wAFBQKgY6IrAKhdszsYfZLYzQBzq5aAgfjVsEdzWANMElvNlNkeoPxuGzuHCpQXcs2WD_B4de8Fuu6j30aPAJI1wY_AO7wbtRbuzNzl6W2t1PfLNkh18GW7rUypH9LYFQdHCyjATmfw',
+    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJhjdCw8ciLoxMtgvJ592S5dYPacuWLMeo6Q-IGLkQVGfUdh84426ZPksVvBmDrXyiWeFQYKr1xQEb-MRjOnTCoFxW3kzE1XPk0VkBNgLOSx7wAFBQKgY6IrAKhdszsYfZLYzQBzq5aAgfjVsEdzWANMElvNlNkeoPxuGzuHCpQXcs2WD_B4de8Fuu6j30aPAJI1wY_AO7wbtRbuzNzl6W2t1PfLNkh18GW7rUypH9LYFQdHCyjATmfw=s0',
     tag: 'Bestseller',
     tagColor: 'gold',
     sizes: ['No. 0', 'No. 1', 'No. 2', 'No. 3', 'No. 4', 'No. 5', 'No. 6'],
@@ -101,7 +112,6 @@ export const NavigationProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSize, setSelectedSize] = useState('All');
-
 
   const [cart, setCart] = useState([
     {

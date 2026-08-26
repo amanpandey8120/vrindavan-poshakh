@@ -4,6 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import BottomNavBar from './components/BottomNavBar';
 
+// Customer Storefront Pages
 import HomeScreen from './pages/HomeScreen';
 import CategoriesScreen from './pages/CategoriesScreen';
 import ShopScreen from './pages/ShopScreen';
@@ -14,19 +15,44 @@ import ProductDetailScreen from './pages/ProductDetailScreen';
 import FitAssistantScreen from './pages/FitAssistantScreen';
 import CartScreen from './pages/CartScreen';
 import SearchResultsScreen from './pages/SearchResultsScreen';
+import AccountScreen from './pages/AccountScreen';
 
-// Screens that have their own back-button header (match Stitch design)
-const SCREENS_WITH_OWN_HEADER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL];
-const SCREENS_WITHOUT_FOOTER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, SCREENS.FIT_ASSISTANT];
+// Admin Portal Pages (Imported from Stitch)
+import AdminLoginScreen from './pages/admin/AdminLoginScreen';
+import AdminAnalyticsScreen from './pages/admin/AdminAnalyticsScreen';
+import AdminProductsScreen from './pages/admin/AdminProductsScreen';
+import AdminAddProductScreen from './pages/admin/AdminAddProductScreen';
+import AdminOrdersScreen from './pages/admin/AdminOrdersScreen';
+import AdminOrderDetailsScreen from './pages/admin/AdminOrderDetailsScreen';
+import AdminCustomersScreen from './pages/admin/AdminCustomersScreen';
+
+// Admin screens check
+const ADMIN_SCREENS = [
+  SCREENS.ADMIN_LOGIN,
+  SCREENS.ADMIN_ANALYTICS,
+  SCREENS.ADMIN_PRODUCTS,
+  SCREENS.ADMIN_ADD_PRODUCT,
+  SCREENS.ADMIN_ORDERS,
+  SCREENS.ADMIN_ORDER_DETAILS,
+  SCREENS.ADMIN_CUSTOMERS,
+];
+
+// Customer screens with their own custom header
+const SCREENS_WITH_OWN_HEADER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, ...ADMIN_SCREENS];
+const SCREENS_WITHOUT_FOOTER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, SCREENS.FIT_ASSISTANT, ...ADMIN_SCREENS];
+const SCREENS_WITHOUT_BOTTOM_NAV = [...ADMIN_SCREENS];
 
 function MainAppContent() {
   const { activeScreen, navigateTo } = useNavigation();
 
+  const isAdmin = ADMIN_SCREENS.includes(activeScreen);
   const showMainHeader = !SCREENS_WITH_OWN_HEADER.includes(activeScreen);
   const showFooter = !SCREENS_WITHOUT_FOOTER.includes(activeScreen);
+  const showBottomNav = !SCREENS_WITHOUT_BOTTOM_NAV.includes(activeScreen);
 
   const renderScreen = () => {
     switch (activeScreen) {
+      // Customer Storefront
       case SCREENS.HOME:
       case SCREENS.HOME_DESKTOP:
         return <HomeScreen />;
@@ -49,6 +75,25 @@ function MainAppContent() {
         return <CartScreen />;
       case SCREENS.SEARCH:
         return <SearchResultsScreen />;
+      case SCREENS.ACCOUNT:
+        return <AccountScreen />;
+
+      // Admin Portal (Stitch imported)
+      case SCREENS.ADMIN_LOGIN:
+        return <AdminLoginScreen />;
+      case SCREENS.ADMIN_ANALYTICS:
+        return <AdminAnalyticsScreen />;
+      case SCREENS.ADMIN_PRODUCTS:
+        return <AdminProductsScreen />;
+      case SCREENS.ADMIN_ADD_PRODUCT:
+        return <AdminAddProductScreen />;
+      case SCREENS.ADMIN_ORDERS:
+        return <AdminOrdersScreen />;
+      case SCREENS.ADMIN_ORDER_DETAILS:
+        return <AdminOrderDetailsScreen />;
+      case SCREENS.ADMIN_CUSTOMERS:
+        return <AdminCustomersScreen />;
+
       default:
         return <HomeScreen />;
     }
@@ -56,12 +101,11 @@ function MainAppContent() {
 
   return (
     <div className="min-h-screen bg-[#fbf9f4] flex flex-col font-sans text-[#1b1c19]">
-      {/* Cart screen uses its own "Shopping Bag" header; ProductDetail uses back-button header */}
+      {/* Customer Store Header */}
       {showMainHeader && <Header />}
 
-      {/* Cart screen needs pt-16 for its own header, screens with main Header handle their own pt */}
+      {/* Cart custom header per Stitch design */}
       {activeScreen === SCREENS.CART && (
-        // Cart header — matches Stitch: arrow_back + "Shopping Bag" centered
         <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-16 h-16 bg-[#fbf9f4]/90 backdrop-blur-md border-b border-[#c1c7cb]/30">
           <button
             onClick={() => navigateTo(SCREENS.HOME)}
@@ -72,14 +116,16 @@ function MainAppContent() {
           <h1 className="text-xl md:text-2xl font-serif font-bold uppercase tracking-widest text-[#00151b] text-center flex-1">
             Shopping Bag
           </h1>
-          <div className="w-6" /> {/* Spacer for centering */}
+          <div className="w-6" />
         </header>
       )}
 
+      {/* Main Screen Content */}
       <div className="flex-1">{renderScreen()}</div>
 
+      {/* Footer & Bottom Navigation */}
       {showFooter && <Footer />}
-      <BottomNavBar />
+      {showBottomNav && <BottomNavBar />}
     </div>
   );
 }

@@ -9,7 +9,7 @@ export default function BottomNavBar() {
     { screen: SCREENS.CATEGORIES, icon: 'grid_view', label: 'Categories' },
     { screen: SCREENS.SHOP, icon: 'favorite', label: 'Wishlist' },
     { screen: SCREENS.CART, icon: 'shopping_bag', label: 'Cart', badge: cartCount },
-    { screen: SCREENS.FIT_ASSISTANT, icon: 'person', label: 'Account' },
+    { screen: SCREENS.ACCOUNT, icon: 'person', label: 'Account' },
   ];
 
   return (

@@ -46,12 +46,16 @@ export default function Footer() {
             <button onClick={() => navigateTo(SCREENS.SHOP)} className="text-left text-sm text-[#6f93a0] hover:text-[#fed65b] transition-colors">Accessories</button>
           </div>
 
-          {/* Support column — matches Stitch: Privacy Policy, Terms of Service, Shipping & Returns */}
+          {/* Support column — matches Stitch: Privacy Policy, Terms of Service, Shipping & Returns, Admin Portal */}
           <div className="flex flex-col gap-4">
             <h4 className="text-xs font-bold text-[#fed65b] tracking-widest uppercase">Support</h4>
             <button onClick={() => navigateTo(SCREENS.SHOP)} className="text-left text-sm text-[#6f93a0] hover:text-[#fed65b] transition-colors">Privacy Policy</button>
             <button onClick={() => navigateTo(SCREENS.SHOP)} className="text-left text-sm text-[#6f93a0] hover:text-[#fed65b] transition-colors">Terms of Service</button>
             <button onClick={() => navigateTo(SCREENS.SHOP)} className="text-left text-sm text-[#6f93a0] hover:text-[#fed65b] transition-colors">Shipping &amp; Returns</button>
+            <button onClick={() => navigateTo(SCREENS.ADMIN_LOGIN)} className="text-left text-sm text-[#fed65b] hover:underline transition-colors flex items-center gap-1.5 pt-2 border-t border-[#6f93a0]/20">
+              <span className="material-symbols-outlined text-[16px]">shield_person</span>
+              <span>Admin Portal</span>
+            </button>
           </div>
 
           {/* Contact column — matches Stitch */}
