@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavigationProvider, useNavigation, SCREENS } from './context/NavigationContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import BottomNavBar from './components/BottomNavBar';
@@ -17,7 +18,12 @@ import CartScreen from './pages/CartScreen';
 import SearchResultsScreen from './pages/SearchResultsScreen';
 import AccountScreen from './pages/AccountScreen';
 
-// Admin Portal Pages (Imported from Stitch)
+// Auth Pages
+import LoginScreen from './pages/LoginScreen';
+import SignupScreen from './pages/SignupScreen';
+import ForgotPasswordScreen from './pages/ForgotPasswordScreen';
+
+// Admin Portal Pages
 import AdminLoginScreen from './pages/admin/AdminLoginScreen';
 import AdminAnalyticsScreen from './pages/admin/AdminAnalyticsScreen';
 import AdminProductsScreen from './pages/admin/AdminProductsScreen';
@@ -25,6 +31,9 @@ import AdminAddProductScreen from './pages/admin/AdminAddProductScreen';
 import AdminOrdersScreen from './pages/admin/AdminOrdersScreen';
 import AdminOrderDetailsScreen from './pages/admin/AdminOrderDetailsScreen';
 import AdminCustomersScreen from './pages/admin/AdminCustomersScreen';
+
+// Auth screens that don't need auth
+const AUTH_SCREENS = [SCREENS.LOGIN, SCREENS.SIGNUP, SCREENS.FORGOT_PASSWORD];
 
 // Admin screens check
 const ADMIN_SCREENS = [
@@ -37,18 +46,58 @@ const ADMIN_SCREENS = [
   SCREENS.ADMIN_CUSTOMERS,
 ];
 
+// Protected customer screens (require authentication)
+const PROTECTED_CUSTOMER_SCREENS = [SCREENS.ACCOUNT];
+
 // Customer screens with their own custom header
-const SCREENS_WITH_OWN_HEADER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, ...ADMIN_SCREENS];
-const SCREENS_WITHOUT_FOOTER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, SCREENS.FIT_ASSISTANT, ...ADMIN_SCREENS];
-const SCREENS_WITHOUT_BOTTOM_NAV = [...ADMIN_SCREENS];
+const SCREENS_WITH_OWN_HEADER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, ...ADMIN_SCREENS, ...AUTH_SCREENS];
+const SCREENS_WITHOUT_FOOTER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, SCREENS.FIT_ASSISTANT, ...ADMIN_SCREENS, ...AUTH_SCREENS];
+const SCREENS_WITHOUT_BOTTOM_NAV = [...ADMIN_SCREENS, ...AUTH_SCREENS];
 
 function MainAppContent() {
   const { activeScreen, navigateTo } = useNavigation();
+  const { user, isAdmin, loading: authLoading } = useAuth();
 
-  const isAdmin = ADMIN_SCREENS.includes(activeScreen);
+  const isAdminScreen = ADMIN_SCREENS.includes(activeScreen);
+  const isAuthScreen = AUTH_SCREENS.includes(activeScreen);
+  const isProtectedCustomerScreen = PROTECTED_CUSTOMER_SCREENS.includes(activeScreen);
+
   const showMainHeader = !SCREENS_WITH_OWN_HEADER.includes(activeScreen);
   const showFooter = !SCREENS_WITHOUT_FOOTER.includes(activeScreen);
   const showBottomNav = !SCREENS_WITHOUT_BOTTOM_NAV.includes(activeScreen);
+
+  // Redirect logic for protected routes
+  if (!authLoading) {
+    // Protect customer account pages
+    if (isProtectedCustomerScreen && !user) {
+      navigateTo(SCREENS.LOGIN);
+      return null;
+    }
+
+    // Protect admin screens (except login)
+    if (isAdminScreen && activeScreen !== SCREENS.ADMIN_LOGIN) {
+      if (!user) {
+        navigateTo(SCREENS.ADMIN_LOGIN);
+        return null;
+      }
+      if (!isAdmin) {
+        navigateTo(SCREENS.HOME);
+        return null;
+      }
+    }
+
+    // Redirect authenticated users away from auth screens
+    if (isAuthScreen && user && activeScreen !== SCREENS.ADMIN_LOGIN) {
+      navigateTo(SCREENS.HOME);
+      return null;
+    }
+
+    // Redirect admin users from admin login to dashboard
+    if (activeScreen === SCREENS.ADMIN_LOGIN && user && isAdmin) {
+      navigateTo(SCREENS.ADMIN_ANALYTICS);
+      return null;
+    }
+  }
 
   const renderScreen = () => {
     switch (activeScreen) {
@@ -78,7 +127,15 @@ function MainAppContent() {
       case SCREENS.ACCOUNT:
         return <AccountScreen />;
 
-      // Admin Portal (Stitch imported)
+      // Auth Pages
+      case SCREENS.LOGIN:
+        return <LoginScreen />;
+      case SCREENS.SIGNUP:
+        return <SignupScreen />;
+      case SCREENS.FORGOT_PASSWORD:
+        return <ForgotPasswordScreen />;
+
+      // Admin Portal
       case SCREENS.ADMIN_LOGIN:
         return <AdminLoginScreen />;
       case SCREENS.ADMIN_ANALYTICS:
@@ -98,6 +155,16 @@ function MainAppContent() {
         return <HomeScreen />;
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#fbf9f4] flex flex-col font-sans text-[#1b1c19]">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="material-symbols-outlined text-[48px] text-[#735c00] animate-spin">sync</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#fbf9f4] flex flex-col font-sans text-[#1b1c19]">
@@ -132,8 +199,10 @@ function MainAppContent() {
 
 export default function App() {
   return (
-    <NavigationProvider>
-      <MainAppContent />
-    </NavigationProvider>
+    <AuthProvider>
+      <NavigationProvider>
+        <MainAppContent />
+      </NavigationProvider>
+    </AuthProvider>
   );
 }

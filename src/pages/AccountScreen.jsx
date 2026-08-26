@@ -1,9 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation, SCREENS } from '../context/NavigationContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function AccountScreen() {
   const { navigateTo, wishlist } = useNavigation();
+  const { user, profile, signOut, updateProfile, updateAuthUser, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    deitySize: '',
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        fullName: profile.full_name || user?.user_metadata?.full_name || '',
+        email: user?.email || '',
+        phone: profile.phone || user?.user_metadata?.phone || '',
+        deitySize: profile.deity_size_preference || '',
+      });
+    }
+  }, [profile, user]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setSaveError(null);
+    setSaveSuccess(false);
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    const updates = {
+      full_name: formData.fullName,
+      phone: formData.phone,
+      deity_size_preference: formData.deitySize,
+    };
+
+    const { error: profileError } = await updateProfile(updates);
+
+    if (!profileError) {
+      const { error: authError } = await updateAuthUser({
+        full_name: formData.fullName,
+        phone: formData.phone,
+      });
+
+      if (authError) {
+        setSaveError('Profile saved, but failed to update account info.');
+      } else {
+        setSaveSuccess(true);
+      }
+    } else {
+      setSaveError(profileError);
+    }
+
+    setIsSaving(false);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigateTo(SCREENS.HOME);
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '?';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  if (authLoading) {
+    return (
+      <main className="min-h-screen bg-[#fbf9f4] pt-24 pb-28 md:pb-16 px-4 md:px-16 max-w-[1280px] mx-auto flex items-center justify-center">
+        <div className="material-symbols-outlined text-[48px] text-[#735c00] animate-spin">sync</div>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="min-h-screen bg-[#fbf9f4] pt-24 pb-28 md:pb-16 px-4 md:px-16 max-w-[1280px] mx-auto flex items-center justify-center">
+        <div className="text-center">
+          <span className="material-symbols-outlined text-[48px] text-[#41484b]">account_circle</span>
+          <h2 className="text-xl font-serif font-bold text-[#00151b] mt-4">Please Sign In</h2>
+          <p className="text-[#41484b] mt-2">You need to be signed in to view your account.</p>
+          <button
+            onClick={() => navigateTo(SCREENS.LOGIN)}
+            className="mt-6 gold-gradient-bg text-[#00151b] px-6 py-2.5 rounded-full text-xs font-bold"
+          >
+            Sign In
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#fbf9f4] pt-24 pb-28 md:pb-16 px-4 md:px-16 max-w-[1280px] mx-auto">
@@ -11,25 +113,39 @@ export default function AccountScreen() {
       <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-[#c1c7cb]/20 mb-8 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
         <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
           <div className="w-20 h-20 rounded-full bg-[#fed65b]/40 border-2 border-[#735c00] flex items-center justify-center text-[#735c00] text-2xl font-bold">
-            <span className="material-symbols-outlined text-[40px]">person</span>
+            <span className="text-[28px]">{getInitials(formData.fullName || user.user_metadata?.full_name)}</span>
           </div>
           <div>
-            <h1 className="text-2xl font-serif font-bold text-[#00151b]">Aarav Sharma</h1>
-            <p className="text-xs text-[#41484b] mt-0.5">aarav.sharma@example.com • +91 98765 43210</p>
+            <h1 className="text-2xl font-serif font-bold text-[#00151b]">
+              {formData.fullName || user.user_metadata?.full_name || 'Devotee'}
+            </h1>
+            <p className="text-xs text-[#41484b] mt-0.5">
+              {user.email} {formData.phone && `• ${formData.phone}`}
+            </p>
             <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold bg-[#fed65b]/30 text-[#745c00] mt-2 border border-[#fed65b]">
-              Devotee Patron
+              {profile?.role === 'admin' ? 'Admin' : 'Devotee Patron'}
             </span>
           </div>
         </div>
 
-        {/* Quick Admin Access Link */}
-        <button
-          onClick={() => navigateTo(SCREENS.ADMIN_LOGIN)}
-          className="px-5 py-2.5 rounded-full border border-[#00151b] text-xs font-bold text-[#00151b] hover:bg-[#00151b] hover:text-white transition-colors flex items-center gap-2"
-        >
-          <span className="material-symbols-outlined text-[16px]">shield_person</span>
-          <span>Access Admin Portal</span>
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          {profile?.role === 'admin' && (
+            <button
+              onClick={() => navigateTo(SCREENS.ADMIN_ANALYTICS)}
+              className="px-5 py-2.5 rounded-full bg-[#00151b] text-white text-xs font-bold hover:bg-[#735c00] transition-colors flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[16px]">shield_person</span>
+              <span>Admin Dashboard</span>
+            </button>
+          )}
+          <button
+            onClick={handleSignOut}
+            className="px-5 py-2.5 rounded-full border border-[#ef4444] text-xs font-bold text-[#ef4444] hover:bg-[#ef4444] hover:text-white transition-colors flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[16px]">logout</span>
+            <span>Sign Out</span>
+          </button>
+        </div>
       </div>
 
       {/* Tabs Layout */}
@@ -68,27 +184,76 @@ export default function AccountScreen() {
               <h3 className="text-lg font-serif font-bold text-[#00151b] border-b border-[#c1c7cb]/30 pb-3">
                 Personal Information
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Full Name</label>
-                  <input type="text" defaultValue="Aarav Sharma" className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none" />
+
+              {saveSuccess && (
+                <div className="p-3 bg-[#dcfce7] border border-[#22c55e]/30 text-[#166534] text-sm rounded-lg flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                  <span>Profile updated successfully!</span>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Email</label>
-                  <input type="email" defaultValue="aarav.sharma@example.com" className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none" />
+              )}
+
+              {saveError && (
+                <div className="p-3 bg-[#fee2e2] border border-[#ef4444]/30 text-[#991b1b] text-sm rounded-lg flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">error</span>
+                  <span>{saveError}</span>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Phone Number</label>
-                  <input type="tel" defaultValue="+91 98765 43210" className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none" />
+              )}
+
+              <form onSubmit={handleSaveProfile} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none"
+                      disabled={isSaving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none cursor-not-allowed"
+                      disabled
+                    />
+                    <p className="text-xs text-[#41484b] mt-1">Email cannot be changed</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none"
+                      disabled={isSaving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Deity Size Preference</label>
+                    <input
+                      type="text"
+                      name="deitySize"
+                      value={formData.deitySize}
+                      onChange={handleChange}
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none"
+                      placeholder="e.g., Laddu Gopal No. 3 (5–6 inch)"
+                      disabled={isSaving}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Deity Size Preference</label>
-                  <input type="text" defaultValue="Laddu Gopal No. 3 (5–6 inch)" className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none" />
-                </div>
-              </div>
-              <button className="gold-gradient-bg text-[#00151b] px-6 py-2.5 rounded-full text-xs font-bold">
-                Save Changes
-              </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="gold-gradient-bg text-[#00151b] px-6 py-2.5 rounded-full text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </form>
             </div>
           )}
 
@@ -125,7 +290,7 @@ export default function AccountScreen() {
                   <span className="text-xs font-bold text-[#735c00] uppercase tracking-wider">Default Home Address</span>
                   <span className="material-symbols-outlined text-[18px] text-[#735c00]">check_circle</span>
                 </div>
-                <p className="text-sm font-semibold text-[#00151b]">Aarav Sharma</p>
+                <p className="text-sm font-semibold text-[#00151b]">{formData.fullName || user.user_metadata?.full_name || 'Aarav Sharma'}</p>
                 <p className="text-xs text-[#41484b] mt-1 leading-relaxed">
                   H3PQ+7W6, Gali Number 1, P Block, Sadh Nagar II, Palam, New Delhi, Delhi – 110045
                 </p>

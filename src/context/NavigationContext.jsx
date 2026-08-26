@@ -18,6 +18,11 @@ export const SCREENS = {
   SEARCH: 'search',
   ACCOUNT: 'account',
 
+  // Auth Screens
+  LOGIN: 'login',
+  SIGNUP: 'signup',
+  FORGOT_PASSWORD: 'forgot-password',
+
   // Admin Portal Screens (Imported from Stitch)
   ADMIN_LOGIN: 'admin-login',
   ADMIN_ANALYTICS: 'admin-analytics',
