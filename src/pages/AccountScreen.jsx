@@ -4,12 +4,14 @@ import { useAuth } from '../context/AuthContext';
 
 export default function AccountScreen() {
   const { navigateTo, wishlist } = useNavigation();
-  const { user, profile, signOut, updateProfile, updateAuthUser, loading: authLoading } = useAuth();
+  const { user, profile, signOut, updateProfile, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     phone: '',
+    city: '',
+    state: '',
     deitySize: '',
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -17,12 +19,14 @@ export default function AccountScreen() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
-    if (profile) {
+    if (user) {
       setFormData({
-        fullName: profile.full_name || user?.user_metadata?.full_name || '',
-        email: user?.email || '',
-        phone: profile.phone || user?.user_metadata?.phone || '',
-        deitySize: profile.deity_size_preference || '',
+        fullName: profile?.full_name || user.user_metadata?.full_name || '',
+        email: user.email || '',
+        phone: profile?.phone || user.user_metadata?.phone || '',
+        city: profile?.city || '',
+        state: profile?.state || '',
+        deitySize: profile?.deity_size_preference || '',
       });
     }
   }, [profile, user]);
@@ -40,27 +44,21 @@ export default function AccountScreen() {
     setSaveError(null);
     setSaveSuccess(false);
 
+    // Whitelisted profile fields only — never pass role, status, or id
     const updates = {
-      full_name: formData.fullName,
-      phone: formData.phone,
-      deity_size_preference: formData.deitySize,
+      full_name: formData.fullName.trim(),
+      phone: formData.phone.trim(),
+      city: formData.city.trim(),
+      state: formData.state.trim(),
+      deity_size_preference: formData.deitySize.trim(),
     };
 
     const { error: profileError } = await updateProfile(updates);
 
-    if (!profileError) {
-      const { error: authError } = await updateAuthUser({
-        full_name: formData.fullName,
-        phone: formData.phone,
-      });
-
-      if (authError) {
-        setSaveError('Profile saved, but failed to update account info.');
-      } else {
-        setSaveSuccess(true);
-      }
-    } else {
+    if (profileError) {
       setSaveError(profileError);
+    } else {
+      setSaveSuccess(true);
     }
 
     setIsSaving(false);
@@ -75,6 +73,7 @@ export default function AccountScreen() {
     if (!name) return '?';
     return name
       .split(' ')
+      .filter(Boolean)
       .map((n) => n[0])
       .join('')
       .toUpperCase()
@@ -92,13 +91,15 @@ export default function AccountScreen() {
   if (!user) {
     return (
       <main className="min-h-screen bg-[#fbf9f4] pt-24 pb-28 md:pb-16 px-4 md:px-16 max-w-[1280px] mx-auto flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center bg-white p-8 rounded-2xl border border-[#c1c7cb]/20 max-w-md shadow-sm">
           <span className="material-symbols-outlined text-[48px] text-[#41484b]">account_circle</span>
           <h2 className="text-xl font-serif font-bold text-[#00151b] mt-4">Please Sign In</h2>
-          <p className="text-[#41484b] mt-2">You need to be signed in to view your account.</p>
+          <p className="text-xs text-[#41484b] mt-2 leading-relaxed">
+            You need to be signed in to view your devotee account details and orders.
+          </p>
           <button
             onClick={() => navigateTo(SCREENS.LOGIN)}
-            className="mt-6 gold-gradient-bg text-[#00151b] px-6 py-2.5 rounded-full text-xs font-bold"
+            className="mt-6 gold-gradient-bg text-[#00151b] px-6 py-2.5 rounded-full text-xs font-bold shadow-sm"
           >
             Sign In
           </button>
@@ -122,9 +123,14 @@ export default function AccountScreen() {
             <p className="text-xs text-[#41484b] mt-0.5">
               {user.email} {formData.phone && `• ${formData.phone}`}
             </p>
-            <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold bg-[#fed65b]/30 text-[#745c00] mt-2 border border-[#fed65b]">
-              {profile?.role === 'admin' ? 'Admin' : 'Devotee Patron'}
-            </span>
+            <div className="flex items-center gap-2 mt-2 justify-center sm:justify-start">
+              <span className="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-bold bg-[#fed65b]/30 text-[#745c00] border border-[#fed65b]">
+                {profile?.role === 'admin' ? 'Administrator' : 'Devotee Patron'}
+              </span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#dcfce7] text-[#166534] border border-[#86efac]">
+                Active
+              </span>
+            </div>
           </div>
         </div>
 
@@ -132,7 +138,7 @@ export default function AccountScreen() {
           {profile?.role === 'admin' && (
             <button
               onClick={() => navigateTo(SCREENS.ADMIN_ANALYTICS)}
-              className="px-5 py-2.5 rounded-full bg-[#00151b] text-white text-xs font-bold hover:bg-[#735c00] transition-colors flex items-center gap-2"
+              className="px-5 py-2.5 rounded-full bg-[#00151b] text-white text-xs font-bold hover:bg-[#735c00] transition-colors flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-[16px]">shield_person</span>
               <span>Admin Dashboard</span>
@@ -140,7 +146,7 @@ export default function AccountScreen() {
           )}
           <button
             onClick={handleSignOut}
-            className="px-5 py-2.5 rounded-full border border-[#ef4444] text-xs font-bold text-[#ef4444] hover:bg-[#ef4444] hover:text-white transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 rounded-full border border-[#ef4444] text-xs font-bold text-[#ef4444] hover:bg-[#ef4444] hover:text-white transition-colors flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined text-[16px]">logout</span>
             <span>Sign Out</span>
@@ -154,7 +160,7 @@ export default function AccountScreen() {
         <aside className="lg:col-span-4 space-y-2">
           {[
             { id: 'profile', label: 'My Profile', icon: 'account_circle' },
-            { id: 'orders', label: 'My Orders (3)', icon: 'package_2' },
+            { id: 'orders', label: 'My Orders', icon: 'package_2' },
             { id: 'addresses', label: 'Saved Addresses', icon: 'home_pin' },
             { id: 'wishlist', label: `Saved Wishlist (${wishlist.length})`, icon: 'favorite' },
             { id: 'help', label: 'Help & Devotional FAQ', icon: 'help_outline' },
@@ -181,19 +187,22 @@ export default function AccountScreen() {
         <div className="lg:col-span-8">
           {activeTab === 'profile' && (
             <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-[#c1c7cb]/20 space-y-6">
-              <h3 className="text-lg font-serif font-bold text-[#00151b] border-b border-[#c1c7cb]/30 pb-3">
-                Personal Information
-              </h3>
+              <div className="flex justify-between items-center border-b border-[#c1c7cb]/30 pb-3">
+                <h3 className="text-lg font-serif font-bold text-[#00151b]">
+                  Personal Information
+                </h3>
+                <span className="text-xs text-[#71787b]">Connected to Supabase</span>
+              </div>
 
               {saveSuccess && (
-                <div className="p-3 bg-[#dcfce7] border border-[#22c55e]/30 text-[#166534] text-sm rounded-lg flex items-center gap-2">
+                <div className="p-3 bg-[#dcfce7] border border-[#22c55e]/30 text-[#166534] text-xs rounded-lg flex items-center gap-2">
                   <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                  <span>Profile updated successfully!</span>
+                  <span>Profile updated successfully in public.profiles!</span>
                 </div>
               )}
 
               {saveError && (
-                <div className="p-3 bg-[#fee2e2] border border-[#ef4444]/30 text-[#991b1b] text-sm rounded-lg flex items-center gap-2">
+                <div className="p-3 bg-[#fee2e2] border border-[#ef4444]/30 text-[#991b1b] text-xs rounded-lg flex items-center gap-2">
                   <span className="material-symbols-outlined text-[18px]">error</span>
                   <span>{saveError}</span>
                 </div>
@@ -202,57 +211,108 @@ export default function AccountScreen() {
               <form onSubmit={handleSaveProfile} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Full Name</label>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">
+                      Full Name
+                    </label>
                     <input
                       type="text"
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleChange}
-                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none"
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none focus:border-[#735c00] transition-colors"
                       disabled={isSaving}
+                      placeholder="Devotee Name"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Email</label>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">
+                      Email Address
+                    </label>
                     <input
                       type="email"
                       value={formData.email}
-                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none cursor-not-allowed"
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none cursor-not-allowed opacity-70"
                       disabled
                     />
-                    <p className="text-xs text-[#41484b] mt-1">Email cannot be changed</p>
+                    <p className="text-[11px] text-[#71787b] mt-1">Managed securely by Supabase Auth</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Phone Number</label>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">
+                      Phone Number
+                    </label>
                     <input
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none"
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none focus:border-[#735c00] transition-colors"
                       disabled={isSaving}
+                      placeholder="+91 98765 43210"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">Deity Size Preference</label>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none focus:border-[#735c00] transition-colors"
+                      disabled={isSaving}
+                      placeholder="e.g., Mathura"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleChange}
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none focus:border-[#735c00] transition-colors"
+                      disabled={isSaving}
+                      placeholder="e.g., Uttar Pradesh"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#41484b] uppercase tracking-wider mb-1">
+                      Deity Size Preference
+                    </label>
                     <input
                       type="text"
                       name="deitySize"
                       value={formData.deitySize}
                       onChange={handleChange}
-                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none"
+                      className="w-full bg-[#fbf9f4] border-0 border-b border-[#c1c7cb] p-2 text-sm text-[#00151b] outline-none focus:border-[#735c00] transition-colors"
                       placeholder="e.g., Laddu Gopal No. 3 (5–6 inch)"
                       disabled={isSaving}
                     />
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="gold-gradient-bg text-[#00151b] px-6 py-2.5 rounded-full text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSaving ? 'Saving...' : 'Save Changes'}
-                </button>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="gold-gradient-bg text-[#00151b] px-6 py-2.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isSaving ? (
+                      <>
+                        <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-[16px]">save</span>
+                        <span>Save Profile Changes</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </form>
             </div>
           )}
@@ -292,7 +352,7 @@ export default function AccountScreen() {
                 </div>
                 <p className="text-sm font-semibold text-[#00151b]">{formData.fullName || user.user_metadata?.full_name || 'Aarav Sharma'}</p>
                 <p className="text-xs text-[#41484b] mt-1 leading-relaxed">
-                  H3PQ+7W6, Gali Number 1, P Block, Sadh Nagar II, Palam, New Delhi, Delhi – 110045
+                  {formData.city ? `${formData.city}, ${formData.state || 'India'}` : 'H3PQ+7W6, Gali Number 1, P Block, Sadh Nagar II, Palam, New Delhi, Delhi – 110045'}
                 </p>
               </div>
             </div>

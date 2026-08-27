@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationProvider, useNavigation, SCREENS } from './context/NavigationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
@@ -22,6 +22,7 @@ import AccountScreen from './pages/AccountScreen';
 import LoginScreen from './pages/LoginScreen';
 import SignupScreen from './pages/SignupScreen';
 import ForgotPasswordScreen from './pages/ForgotPasswordScreen';
+import ResetPasswordScreen from './pages/ResetPasswordScreen';
 
 // Admin Portal Pages
 import AdminLoginScreen from './pages/admin/AdminLoginScreen';
@@ -33,10 +34,15 @@ import AdminOrderDetailsScreen from './pages/admin/AdminOrderDetailsScreen';
 import AdminCustomersScreen from './pages/admin/AdminCustomersScreen';
 import AdminUsersScreen from './pages/admin/AdminUsersScreen';
 
-// Auth screens that don't need auth
-const AUTH_SCREENS = [SCREENS.LOGIN, SCREENS.SIGNUP, SCREENS.FORGOT_PASSWORD];
+// Auth screens that don't require user session
+const AUTH_SCREENS = [
+  SCREENS.LOGIN,
+  SCREENS.SIGNUP,
+  SCREENS.FORGOT_PASSWORD,
+  SCREENS.RESET_PASSWORD
+];
 
-// Admin screens check
+// Admin screens
 const ADMIN_SCREENS = [
   SCREENS.ADMIN_LOGIN,
   SCREENS.ADMIN_ANALYTICS,
@@ -48,17 +54,53 @@ const ADMIN_SCREENS = [
   SCREENS.ADMIN_USERS,
 ];
 
-// Protected customer screens (require authentication)
+// Protected customer screens (require authenticated user session)
 const PROTECTED_CUSTOMER_SCREENS = [SCREENS.ACCOUNT];
 
-// Customer screens with their own custom header
+// Header / Footer layout visibility
 const SCREENS_WITH_OWN_HEADER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, ...ADMIN_SCREENS, ...AUTH_SCREENS];
 const SCREENS_WITHOUT_FOOTER = [SCREENS.CART, SCREENS.PRODUCT_DETAIL, SCREENS.FIT_ASSISTANT, ...ADMIN_SCREENS, ...AUTH_SCREENS];
 const SCREENS_WITHOUT_BOTTOM_NAV = [...ADMIN_SCREENS, ...AUTH_SCREENS];
 
+function SuspendedAccountScreen() {
+  const { signOut } = useAuth();
+  const { navigateTo } = useNavigation();
+
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-16 bg-[#fbf9f4] relative overflow-hidden">
+      <div className="w-full max-w-[480px] bg-white rounded-xl shadow-lg border border-[#ef4444]/30 p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#fee2e2] text-[#991b1b] flex items-center justify-center mx-auto mb-4">
+          <span className="material-symbols-outlined text-[36px]">block</span>
+        </div>
+        <h1 className="text-2xl font-serif font-bold text-[#00151b]">Account Suspended</h1>
+        <p className="text-sm text-[#41484b] mt-3 leading-relaxed">
+          Your account has been temporarily suspended by the administrator. Please contact our support team to resolve this issue.
+        </p>
+        <div className="mt-4 p-3 bg-[#fbf9f4] rounded-lg border border-[#c1c7cb]/40 text-xs text-[#41484b]">
+          <p className="font-bold text-[#00151b]">Support Email:</p>
+          <a href="mailto:avnimisra7602@gmail.com" className="text-[#735c00] underline font-semibold">
+            avnimisra7602@gmail.com
+          </a>
+        </div>
+        <div className="mt-6 flex flex-col gap-3">
+          <button
+            onClick={async () => {
+              await signOut();
+              navigateTo(SCREENS.HOME);
+            }}
+            className="w-full py-3 bg-[#00151b] text-white rounded-full text-xs font-bold hover:bg-[#735c00] transition-colors"
+          >
+            Sign Out & Return Home
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MainAppContent() {
-  const { activeScreen, navigateTo } = useNavigation();
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { activeScreen, navigateTo, setReturnScreen } = useNavigation();
+  const { user, isAdmin, isSuspended, loading: authLoading } = useAuth();
 
   const isAdminScreen = ADMIN_SCREENS.includes(activeScreen);
   const isAuthScreen = AUTH_SCREENS.includes(activeScreen);
@@ -68,37 +110,76 @@ function MainAppContent() {
   const showFooter = !SCREENS_WITHOUT_FOOTER.includes(activeScreen);
   const showBottomNav = !SCREENS_WITHOUT_BOTTOM_NAV.includes(activeScreen);
 
-  // Redirect logic for protected routes
-  if (!authLoading) {
-    // Protect customer account pages
+  // Check URL hash for password recovery on mount
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash || '';
+      if (hash.includes('type=recovery') || hash.includes('reset-password')) {
+        navigateTo(SCREENS.RESET_PASSWORD);
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [navigateTo]);
+
+  // Route protection and redirection
+  useEffect(() => {
+    if (authLoading) return;
+
+    // Customer protected route: unauthenticated access -> redirect to Login with returnScreen
     if (isProtectedCustomerScreen && !user) {
+      setReturnScreen(activeScreen);
       navigateTo(SCREENS.LOGIN);
-      return null;
+      return;
     }
 
-    // Protect admin screens (except login)
+    // Admin protected routes: require role === 'admin'
     if (isAdminScreen && activeScreen !== SCREENS.ADMIN_LOGIN) {
       if (!user) {
         navigateTo(SCREENS.ADMIN_LOGIN);
-        return null;
+        return;
       }
       if (!isAdmin) {
         navigateTo(SCREENS.HOME);
-        return null;
+        return;
       }
     }
 
-    // Redirect authenticated users away from auth screens
-    if (isAuthScreen && user && activeScreen !== SCREENS.ADMIN_LOGIN) {
-      navigateTo(SCREENS.HOME);
-      return null;
+    // Auth screen redirection: if already logged in (and not reset-password), route to appropriate dashboard
+    if (isAuthScreen && user && activeScreen !== SCREENS.RESET_PASSWORD) {
+      if (activeScreen === SCREENS.ADMIN_LOGIN && isAdmin) {
+        navigateTo(SCREENS.ADMIN_ANALYTICS);
+      } else if (activeScreen !== SCREENS.ADMIN_LOGIN) {
+        navigateTo(SCREENS.HOME);
+      }
     }
+  }, [
+    authLoading,
+    activeScreen,
+    user,
+    isAdmin,
+    isProtectedCustomerScreen,
+    isAdminScreen,
+    isAuthScreen,
+    navigateTo,
+    setReturnScreen,
+  ]);
 
-    // Redirect admin users from admin login to dashboard
-    if (activeScreen === SCREENS.ADMIN_LOGIN && user && isAdmin) {
-      navigateTo(SCREENS.ADMIN_ANALYTICS);
-      return null;
-    }
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#fbf9f4] flex flex-col text-[#1b1c19]">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="material-symbols-outlined text-[48px] text-[#735c00] animate-spin">sync</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Display suspended screen if account is suspended
+  if (user && isSuspended && isProtectedCustomerScreen) {
+    return <SuspendedAccountScreen />;
   }
 
   const renderScreen = () => {
@@ -136,6 +217,8 @@ function MainAppContent() {
         return <SignupScreen />;
       case SCREENS.FORGOT_PASSWORD:
         return <ForgotPasswordScreen />;
+      case SCREENS.RESET_PASSWORD:
+        return <ResetPasswordScreen />;
 
       // Admin Portal
       case SCREENS.ADMIN_LOGIN:
@@ -159,16 +242,6 @@ function MainAppContent() {
         return <HomeScreen />;
     }
   };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-[#fbf9f4] flex flex-col text-[#1b1c19]">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="material-symbols-outlined text-[48px] text-[#735c00] animate-spin">sync</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#fbf9f4] flex flex-col text-[#1b1c19]">

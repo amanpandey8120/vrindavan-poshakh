@@ -11,7 +11,7 @@ export default function Header() {
     searchQuery,
     setSearchQuery,
   } = useNavigation();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -34,6 +34,7 @@ export default function Header() {
     if (!name) return '?';
     return name
       .split(' ')
+      .filter(Boolean)
       .map((n) => n[0])
       .join('')
       .toUpperCase()
@@ -172,40 +173,62 @@ export default function Header() {
               </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-[#c1c7cb]/20 py-2 z-50 animate-fade-in">
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-[#c1c7cb]/20 py-2 z-50 animate-fade-in">
                   <div className="px-4 py-2 border-b border-[#c1c7cb]/20">
                     <p className="text-xs font-bold text-[#00151b] truncate">
                       {profile?.full_name || user.user_metadata?.full_name || 'Devotee'}
                     </p>
-                    <p className="text-xs text-[#41484b] truncate">{user.email}</p>
-                    {profile?.role === 'admin' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-[#00151b]/10 text-[#00151b] mt-1">
-                        Admin
+                    <p className="text-[11px] text-[#41484b] truncate">{user.email}</p>
+                    {isAdmin && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#00151b] text-[#fed65b] mt-1">
+                        Admin Access
                       </span>
                     )}
                   </div>
+
                   <button
                     onClick={() => { navigateTo(SCREENS.ACCOUNT); setShowUserMenu(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-[#00151b] hover:bg-[#f0eee9] flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-xs font-semibold text-[#00151b] hover:bg-[#f0eee9] flex items-center gap-2"
                   >
-                    <span className="material-symbols-outlined text-[20px]">account_circle</span>
+                    <span className="material-symbols-outlined text-[18px]">account_circle</span>
                     My Account
                   </button>
-                  {profile?.role === 'admin' && (
-                    <button
-                      onClick={() => { navigateTo(SCREENS.ADMIN_ANALYTICS); setShowUserMenu(false); }}
-                      className="w-full px-4 py-2 text-left text-sm text-[#00151b] hover:bg-[#f0eee9] flex items-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">shield_person</span>
-                      Admin Dashboard
-                    </button>
+
+                  <button
+                    onClick={() => { navigateTo(SCREENS.ACCOUNT); setShowUserMenu(false); }}
+                    className="w-full px-4 py-2 text-left text-xs font-semibold text-[#00151b] hover:bg-[#f0eee9] flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">package_2</span>
+                    Orders
+                  </button>
+
+                  <button
+                    onClick={() => { navigateTo(SCREENS.SHOP); setShowUserMenu(false); }}
+                    className="w-full px-4 py-2 text-left text-xs font-semibold text-[#00151b] hover:bg-[#f0eee9] flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">favorite</span>
+                    Wishlist ({wishlist.length})
+                  </button>
+
+                  {isAdmin && (
+                    <>
+                      <hr className="my-1 border-[#c1c7cb]/20" />
+                      <button
+                        onClick={() => { navigateTo(SCREENS.ADMIN_ANALYTICS); setShowUserMenu(false); }}
+                        className="w-full px-4 py-2 text-left text-xs font-bold text-[#745c00] bg-[#fed65b]/20 hover:bg-[#fed65b]/40 flex items-center gap-2 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">shield_person</span>
+                        Admin Panel
+                      </button>
+                    </>
                   )}
-                  <hr className="my-2 border-[#c1c7cb]/20" />
+
+                  <hr className="my-1 border-[#c1c7cb]/20" />
                   <button
                     onClick={handleSignOut}
-                    className="w-full px-4 py-2 text-left text-sm text-[#ef4444] hover:bg-[#fee2e2] flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-xs font-semibold text-[#ef4444] hover:bg-[#fee2e2] flex items-center gap-2 transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[20px]">logout</span>
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
                     Sign Out
                   </button>
                 </div>
@@ -221,7 +244,7 @@ export default function Header() {
               </button>
               <button
                 onClick={() => navigateTo(SCREENS.SIGNUP)}
-                className="gold-gradient-bg text-[#00151b] px-4 py-1.5 rounded-full text-xs font-bold"
+                className="gold-gradient-bg text-[#00151b] px-4 py-1.5 rounded-full text-xs font-bold shadow-xs hover:shadow-sm transition-all"
               >
                 Sign Up
               </button>

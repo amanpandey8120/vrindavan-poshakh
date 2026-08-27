@@ -22,6 +22,7 @@ export const SCREENS = {
   LOGIN: 'login',
   SIGNUP: 'signup',
   FORGOT_PASSWORD: 'forgot-password',
+  RESET_PASSWORD: 'reset-password',
 
   // Admin Portal Screens (Imported from Stitch)
   ADMIN_LOGIN: 'admin-login',
@@ -113,7 +114,13 @@ export const INITIAL_PRODUCTS = [
 ];
 
 export const NavigationProvider = ({ children }) => {
-  const [activeScreen, setActiveScreen] = useState(SCREENS.HOME);
+  const [activeScreen, setActiveScreen] = useState(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('reset-password')) {
+      return SCREENS.RESET_PASSWORD;
+    }
+    return SCREENS.HOME;
+  });
+  const [returnScreen, setReturnScreen] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(INITIAL_PRODUCTS[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -195,6 +202,8 @@ export const NavigationProvider = ({ children }) => {
         activeScreen,
         SCREENS,
         navigateTo,
+        returnScreen,
+        setReturnScreen,
         selectedProduct,
         setSelectedProduct,
         searchQuery,

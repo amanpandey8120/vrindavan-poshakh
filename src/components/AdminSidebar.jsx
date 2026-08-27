@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigation, SCREENS } from '../context/NavigationContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminSidebar({ activeAdminTab }) {
   const { navigateTo } = useNavigation();
+  const { signOut } = useAuth();
 
   const navItems = [
     { id: SCREENS.ADMIN_ANALYTICS, label: 'Analytics / Dashboard', icon: 'bar_chart' },
@@ -13,6 +15,11 @@ export default function AdminSidebar({ activeAdminTab }) {
     { id: SCREENS.ADMIN_CUSTOMERS, label: 'Customers', icon: 'group' },
     { id: SCREENS.ADMIN_USERS, label: 'Users & Access', icon: 'manage_accounts' },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigateTo(SCREENS.ADMIN_LOGIN);
+  };
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 flex flex-col py-6 h-full w-72 md:w-80 bg-[#fbf9f4] border-r border-[#c1c7cb]/30 shadow-xl hidden md:flex">
@@ -48,7 +55,7 @@ export default function AdminSidebar({ activeAdminTab }) {
         })}
       </nav>
 
-      {/* Footer Switch to Customer Storefront */}
+      {/* Footer Switch to Customer Storefront & Sign Out */}
       <div className="px-6 mt-auto pt-6 border-t border-[#c1c7cb]/30 flex flex-col gap-2">
         <button
           onClick={() => navigateTo(SCREENS.HOME)}
@@ -58,7 +65,7 @@ export default function AdminSidebar({ activeAdminTab }) {
           <span>View Customer Store</span>
         </button>
         <button
-          onClick={() => navigateTo(SCREENS.ADMIN_LOGIN)}
+          onClick={handleSignOut}
           className="flex items-center gap-3 px-4 py-2 text-xs font-bold text-[#ba1a1a] hover:underline"
         >
           <span className="material-symbols-outlined text-[18px]">logout</span>
