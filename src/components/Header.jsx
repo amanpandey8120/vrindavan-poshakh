@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logoSrc from '../assets/logo.png';
 import { useNavigation, SCREENS } from '../context/NavigationContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -44,20 +45,27 @@ export default function Header() {
   const isHome = activeScreen === SCREENS.HOME || activeScreen === SCREENS.HOME_DESKTOP;
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-16 h-16 bg-[#fbf9f4]/90 backdrop-blur-md border-b border-[#c1c7cb]/30 transition-all duration-300">
-      {/* Mobile: Menu icon (left) | Desktop: nav links (left) — matches Stitch */}
-      <div className="flex items-center">
-        {/* Mobile hamburger → goes to Categories */}
+    <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-[#fbf9f4]/90 backdrop-blur-md border-b border-[#c1c7cb]/30 transition-all duration-300">
+
+      {/* LEFT — Logo + Desktop Nav */}
+      <div className="flex items-center gap-6 md:gap-8">
+
+        {/* Logo — left-anchored on all screen sizes */}
         <button
-          onClick={() => navigateTo(SCREENS.CATEGORIES)}
-          aria-label="Menu"
-          className="md:hidden text-[#00151b] flex items-center justify-center p-2 hover:text-[#735c00] transition-colors"
+          onClick={() => navigateTo(SCREENS.HOME)}
+          aria-label="Vrindavan Poshakh — Home"
+          className="flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity"
         >
-          <span className="material-symbols-outlined text-[24px]">menu</span>
+          <img
+            src={logoSrc}
+            alt="Vrindavan Poshakh"
+            className="h-9 md:h-11 w-auto object-contain"
+            draggable={false}
+          />
         </button>
 
-        {/* Desktop nav — matches Stitch: Home, Categories, New Arrivals */}
-        <nav className="hidden md:flex items-center gap-8">
+        {/* Desktop nav — shown only on md+ */}
+        <nav className="hidden md:flex items-center gap-7">
           <button
             onClick={() => navigateTo(SCREENS.HOME)}
             className={`text-xs font-bold uppercase tracking-widest transition-colors ${
@@ -85,18 +93,24 @@ export default function Header() {
         </nav>
       </div>
 
-      {/* Brand name — absolutely centered on all screen sizes, matches Stitch */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-        <button
-          onClick={() => navigateTo(SCREENS.HOME)}
-          className="text-base md:text-2xl font-serif font-bold uppercase tracking-widest text-[#00151b] text-center hover:opacity-80 transition-opacity whitespace-nowrap"
-        >
+      {/* CENTER — Brand name, absolutely centered (desktop only) */}
+      <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 pointer-events-none select-none">
+        <span className="text-xl font-serif font-bold uppercase tracking-widest text-[#00151b] whitespace-nowrap">
           Vrindavan Poshakh
-        </button>
+        </span>
       </div>
 
-      {/* Right side icons — matches Stitch: Search, Wishlist (desktop), Cart (desktop), User Menu */}
+      {/* RIGHT — Action icons: hamburger (mobile), Search, Wishlist, Cart, User */}
       <div className="flex items-center gap-2 md:gap-4 relative">
+
+        {/* Mobile hamburger → goes to Categories */}
+        <button
+          onClick={() => navigateTo(SCREENS.CATEGORIES)}
+          aria-label="Menu"
+          className="md:hidden text-[#00151b] flex items-center justify-center p-2 hover:text-[#735c00] transition-colors"
+        >
+          <span className="material-symbols-outlined text-[24px]">menu</span>
+        </button>
 
         {/* Search */}
         {isSearchOpen ? (
