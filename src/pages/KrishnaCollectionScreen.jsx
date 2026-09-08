@@ -1,42 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigation, SCREENS } from '../context/NavigationContext';
 
-// Stitch products from Krishna Poshakh screen
-const KRISHNA_PRODUCTS = [
-  {
-    id: 'k1',
-    title: 'Golden Peacock Silk Poshakh',
-    price: 1250,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBslFOIdh9nPDVqcOO8pr-JpIt5DM7cNjgOK_ikXWn0N3QkgU1eRW_XU9FYVdwZg9jJv7wzwfGkCtk3JjVyWYNhXVxNxPF_Z5ESCIMJXkfgrYPKLjoFfRvxNsMaef3QTrwu1CEGNKujgvPk_CX9s8H-FwmuiFkf4SCh5ZOqy_BGMXRRk62WRLWdG_gbZju8XEuN43qV1ccWXetzUy11fLYEtndZkVPQ7Dp623063xgzihGq4uUGtVz6Ow',
-    badge: 'New',
-    badgeColor: '#4c0c2a',
-    badgeText: '#c97392',
-  },
-  {
-    id: 'k2',
-    title: 'Crimson Zardozi Velvet Set',
-    price: 2400,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC4xK0H4wrW7vxlc5cXpAU03_EqEcD0BP6LWrZqM7bQbkxiQjI9o0AW7ERquWo7oCk-QSf7xJZc0kc1lpdX1IeEEAAZzUSgVTWMxhwH60EDkKIkw-GoSO_zEeHut4E3MhS-KIAsxSpv1fPlDLhZ8i02aQd47lq6pvGkABYfVwR_6bv5So03lIbXjo5PKIqDGrI7NobacEokVXFGATAwy49-iLWPoNRyyZfbin3M3eqK1wdZiTyBSoLLqA',
-  },
-  {
-    id: 'k3',
-    title: 'Pastel Lotus Georgette Poshakh',
-    price: 850,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDH-i0lTH__zEJnYgzMxP8vEjZbETaRaIJTCF-UhoPWIOse2Q9wf6gnD_1y6Qqs78RDrjNu4elhvE0UnVszrqd8b0JjOr77JFpk-9Aef6jhQCwgIJg1Ai2wZOv0GT_GnRSPqa6GY-NQ43cV_Vos2akfpT3vro3mG9AuvfKuyBxo0-HPvk7G9dPxEmHUr59Bs7aod8sC8PM3PdadULbjs0SyM43q8I37ncBiwP8vR0ifDTLDmdn9l_VuMg',
-  },
-  {
-    id: 'k4',
-    title: 'Festive Basant Silk Set',
-    price: 1600,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDKE2CSbfBUDzOVyygLhLnY4kC1lPcdYocNicsDpwvSQm6mdg1ZtGmgf9-HXnhXYbAajHkiY5P_s5XAjFEg_hGgJHHX09D-gU2RDQ8VGCEwGY17pQwFUXZBj7sKJkL4WGC9p3JO6Jnb4V3yCgRNtZqZ5mUYOgEX3IhPBnMkF2ORg3wLFNMfv_e3v0bpXOSwxmYfpjD6F9EJa2g6Q2yVbN-7PibFqnxTl5-dWGDd1o9K7OjQoLMwdqA',
-  },
-];
-
-const MATERIAL_FILTERS = ['All Materials', 'Silk', 'Cotton', 'Velvet'];
-
 export default function KrishnaCollectionScreen() {
-  const { navigateTo } = useNavigation();
+  const { products, productLoading, navigateTo, setSelectedProduct } = useNavigation();
   const [activeFilter, setActiveFilter] = useState('All Materials');
+
+  // Filter Krishna Poshakh category products
+  const krishnaProducts = useMemo(
+    () => products.filter((p) => p.category?.includes('Krishna')),
+    [products]
+  );
+
+  if (productLoading) {
+    return (
+      <main className="min-h-screen bg-[#fbf9f4] flex flex-col pt-16 pb-20 md:pb-0">
+        <div className="flex-1 flex items-center justify-center h-[500px]">
+          <div className="material-symbols-outlined text-[48px] text-[#735c00] animate-spin">sync</div>
+          <p className="mt-4 text-[#41484b]">Loading Krishna collection...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#fbf9f4] flex flex-col pt-16 pb-20 md:pb-0">
@@ -101,9 +85,10 @@ export default function KrishnaCollectionScreen() {
 
         {/* Main Content */}
         <div className="flex-grow">
+
           {/* Mobile Filter Pills — matches Stitch */}
           <div className="md:hidden flex overflow-x-auto gap-4 pb-4 mb-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            {MATERIAL_FILTERS.map((f) => (
+            {['All Materials', 'Silk', 'Cotton', 'Velvet'].map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
@@ -119,12 +104,20 @@ export default function KrishnaCollectionScreen() {
           </div>
 
           {/* Product Grid — 2 cols mobile, 3 cols desktop — matches Stitch */}
+          {!productLoading && krishnaProducts.length === 0 && (
+            <div className="py-16 text-center text-sm text-[#41484b] bg-white rounded-xl border border-[#e4e2dd]">
+              No products available yet.
+            </div>
+          )}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-16">
-            {KRISHNA_PRODUCTS.map((product) => (
+            {krishnaProducts.map((product) => (
               <div
                 key={product.id}
                 className="group relative flex flex-col cursor-pointer"
-                onClick={() => navigateTo(SCREENS.PRODUCT_DETAIL)}
+                onClick={() => {
+                  setSelectedProduct(product);
+                  navigateTo(SCREENS.PRODUCT_DETAIL);
+                }}
               >
                 <div className="relative w-full aspect-[3/4] bg-white rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,21,27,0.05)] mb-4">
                   <img

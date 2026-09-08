@@ -1,13 +1,13 @@
 import React from 'react';
-import { useNavigation, SCREENS } from '../context/NavigationContext';
+import { useNavigation } from '../context/NavigationContext';
 import ProductCard from '../components/ProductCard';
 
 export default function ShringarBundlesScreen() {
-  const { products, addToCart, navigateTo } = useNavigation();
+  const { products } = useNavigation();
 
   // Filter Shringar Bundles
   const bundleProducts = products.filter(
-    (p) => p.category === 'Shringar Bundles' || p.id === 'p3'
+    (p) => p.category === 'Shringar Bundles'
   );
 
   return (
@@ -65,9 +65,15 @@ export default function ShringarBundlesScreen() {
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bundleProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {bundleProducts.length === 0 ? (
+            <div className="sm:col-span-2 lg:col-span-3 py-16 text-center text-sm text-[#41484b] bg-white rounded-xl border border-[#e4e2dd]">
+              No products available yet.
+            </div>
+          ) : (
+            bundleProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          )}
         </div>
       </section>
     </main>

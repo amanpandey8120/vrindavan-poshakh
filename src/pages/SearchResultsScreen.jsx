@@ -3,16 +3,18 @@ import { useNavigation, SCREENS } from '../context/NavigationContext';
 import ProductCard from '../components/ProductCard';
 
 export default function SearchResultsScreen() {
-  const { searchQuery, products, navigateTo } = useNavigation();
+  const { searchQuery, products, categories, navigateTo } = useNavigation();
   const [filterTag, setFilterTag] = useState('All');
 
   const query = (searchQuery || '').toLowerCase().trim();
+  const tagList = ['All', ...categories.map((c) => c.name).filter(Boolean)];
 
   const matchingProducts = products.filter((p) => {
+    const category = (p.category || '').toLowerCase();
     const titleMatch = p.title.toLowerCase().includes(query);
-    const catMatch = p.category.toLowerCase().includes(query);
-    const descMatch = p.description.toLowerCase().includes(query);
-    const tagMatch = filterTag === 'All' || p.category.includes(filterTag);
+    const catMatch = category.includes(query);
+    const descMatch = (p.description || '').toLowerCase().includes(query);
+    const tagMatch = filterTag === 'All' || category.includes(filterTag.toLowerCase());
     return (titleMatch || catMatch || descMatch) && tagMatch;
   });
 
@@ -33,7 +35,7 @@ export default function SearchResultsScreen() {
 
       {/* Filter Chips */}
       <div className="flex gap-2 mb-8 overflow-x-auto pb-2 hide-scrollbar">
-        {['All', 'Krishna Poshakh', 'Mukut & Jewellery', 'Shringar Bundles'].map((tag) => (
+        {tagList.map((tag) => (
           <button
             key={tag}
             onClick={() => setFilterTag(tag)}

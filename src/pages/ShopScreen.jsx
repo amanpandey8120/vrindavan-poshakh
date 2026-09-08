@@ -7,6 +7,7 @@ export default function ShopScreen() {
     products,
     selectedCategory,
     setSelectedCategory,
+    categories,
     selectedSize,
     setSelectedSize
   } = useNavigation();
@@ -14,7 +15,6 @@ export default function ShopScreen() {
   const [sortBy, setSortBy] = useState('featured');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  const categoriesList = ['All', 'Krishna Poshakh', 'Mukut & Jewellery', 'Shringar Bundles'];
   const sizesList = ['All', 'No. 0', 'No. 1', 'No. 2', 'No. 3', 'No. 4', 'No. 5', 'No. 6'];
 
   // Filter products
@@ -109,24 +109,41 @@ export default function ShopScreen() {
             <h4 className="text-xs font-bold text-[#735c00] uppercase tracking-wider mb-3">
               Categories
             </h4>
-            <div className="flex flex-col gap-2">
-              {categoriesList.map((cat) => (
+            {categories.length > 0 ? (
+              <div className="flex flex-col gap-2">
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() => setSelectedCategory('All')}
                   className={`text-left text-xs px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-between ${
-                    selectedCategory === cat
+                    selectedCategory === 'All'
                       ? 'bg-[#fed65b] text-[#745c00] font-bold'
                       : 'text-[#41484b] hover:bg-[#f5f3ee]'
                   }`}
                 >
-                  <span>{cat}</span>
-                  {selectedCategory === cat && (
-                    <span className="material-symbols-outlined text-[16px]">check</span>
-                  )}
+                  <span>All Categories</span>
+                  <span className="material-symbols-outlined text-[16px]">check</span>
                 </button>
-              ))}
-            </div>
+                {categories.map((cat) => (
+                  <button
+                    key={cat.slug || cat.name}
+                    onClick={() => setSelectedCategory(cat.name)}
+                    className={`text-left text-xs px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-between ${
+                      selectedCategory === cat.name
+                        ? 'bg-[#fed65b] text-[#745c00] font-bold'
+                        : 'text-[#41484b] hover:bg-[#f5f3ee]'
+                    }`}
+                  >
+                    <span>{cat.name}</span>
+                    {selectedCategory === cat.name && (
+                      <span className="material-symbols-outlined text-[16px]">check</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-[#71787b] pt-3">
+                Loading categories...
+              </div>
+            )}
           </div>
 
           {/* Size Filter */}
@@ -154,7 +171,19 @@ export default function ShopScreen() {
 
         {/* Product Grid */}
         <section className="md:col-span-9">
-          {sortedProducts.length === 0 ? (
+          {products.length === 0 ? (
+            <div className="bg-white p-12 rounded-2xl text-center border border-[#e4e2dd]">
+              <span className="material-symbols-outlined text-[48px] text-[#71787b]">
+                inventory_2
+              </span>
+              <h3 className="text-lg font-serif font-bold text-[#00151b] mt-2">
+                No products available yet.
+              </h3>
+              <p className="text-xs text-[#71787b] mt-1">
+                Check back soon — new items are added regularly.
+              </p>
+            </div>
+          ) : sortedProducts.length === 0 ? (
             <div className="bg-white p-12 rounded-2xl text-center border border-[#e4e2dd]">
               <span className="material-symbols-outlined text-[48px] text-[#71787b]">
                 search_off

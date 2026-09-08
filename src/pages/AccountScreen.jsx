@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigation, SCREENS } from '../context/NavigationContext';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export default function AccountScreen() {
-  const { navigateTo, wishlist } = useNavigation();
+  const { navigateTo, wishlist, navigateToAdmin } = useNavigation();
   const { user, profile, signOut, updateProfile, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
@@ -17,6 +18,34 @@ export default function AccountScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [orders, setOrders] = useState([]);
+  const [orderLoading, setOrderLoading] = useState(true);
+
+  // Fetch order history from Supabase
+  useEffect(() => {
+    const fetchOrderHistory = async () => {
+      if (!user) return;
+
+      try {
+        // Fetch orders for this user from the orders table
+        const { data: userOrders, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setOrders(userOrders || []);
+      } catch (err) {
+        console.error('Error fetching order history:', err);
+        setOrders([]);
+      } finally {
+        setOrderLoading(false);
+      }
+    };
+
+    fetchOrderHistory();
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -137,7 +166,7 @@ export default function AccountScreen() {
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           {profile?.role === 'admin' && (
             <button
-              onClick={() => navigateTo(SCREENS.ADMIN_ANALYTICS)}
+              onClick={() => navigateToAdmin(SCREENS.ADMIN_ANALYTICS)}
               className="px-5 py-2.5 rounded-full bg-[#00151b] text-white text-xs font-bold hover:bg-[#735c00] transition-colors flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-[16px]">shield_person</span>
@@ -322,21 +351,27 @@ export default function AccountScreen() {
               <h3 className="text-lg font-serif font-bold text-[#00151b] border-b border-[#c1c7cb]/30 pb-3">
                 Order History
               </h3>
-              {[
-                { id: 'ORD-2026-8942', date: '26 Aug 2026', total: '₹5,247', status: 'Processing' },
-                { id: 'ORD-2026-8712', date: '14 Jul 2026', total: '₹3,499', status: 'Delivered' },
-                { id: 'ORD-2026-8401', date: '22 May 2026', total: '₹1,850', status: 'Delivered' },
-              ].map((ord) => (
-                <div key={ord.id} className="p-4 border border-[#c1c7cb]/30 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="font-mono text-xs font-bold text-[#00151b]">{ord.id}</span>
-                    <p className="text-xs text-[#41484b] mt-0.5">{ord.date} • Total: {ord.total}</p>
-                  </div>
-                  <span className="px-3 py-1 bg-[#fed65b]/20 text-[#745c00] text-xs font-bold rounded-full">
-                    {ord.status}
-                  </span>
+              {orderLoading ? (
+                <div className="p-4 text-center text-xs text-[#41484b]">
+                  Loading order history...
                 </div>
-              ))}
+              ) : orders.length === 0 ? (
+                <div className="p-4 text-center text-xs text-[#41484b]">
+                  No orders yet.
+                </div>
+              ) : (
+                orders.map((ord) => (
+                  <div key={ord.id} className="p-4 border border-[#c1c7cb]/30 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="font-mono text-xs font-bold text-[#00151b]">{ord.id}</span>
+                      <p className="text-xs text-[#41484b] mt-0.5">{new Date(ord.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <span className="px-3 py-1 bg-[#fed65b] text-[#745c00] text-xs font-bold rounded-full">
+                      {ord.status}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           )}
 
@@ -350,9 +385,11 @@ export default function AccountScreen() {
                   <span className="text-xs font-bold text-[#735c00] uppercase tracking-wider">Default Home Address</span>
                   <span className="material-symbols-outlined text-[18px] text-[#735c00]">check_circle</span>
                 </div>
-                <p className="text-sm font-semibold text-[#00151b]">{formData.fullName || user.user_metadata?.full_name || 'Aarav Sharma'}</p>
+                <p className="text-sm font-semibold text-[#00151b]">
+                  {formData.fullName || user.user_metadata?.full_name || 'Devotee'}
+                </p>
                 <p className="text-xs text-[#41484b] mt-1 leading-relaxed">
-                  {formData.city ? `${formData.city}, ${formData.state || 'India'}` : 'H3PQ+7W6, Gali Number 1, P Block, Sadh Nagar II, Palam, New Delhi, Delhi – 110045'}
+                  {formData.city ? `${formData.city}, ${formData.state || 'India'}` : 'No saved address yet. Add your city and state in "My Profile".'}
                 </p>
               </div>
             </div>

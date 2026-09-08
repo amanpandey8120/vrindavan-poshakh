@@ -3,7 +3,7 @@ import { useNavigation, SCREENS } from '../context/NavigationContext';
 import ProductCard from '../components/ProductCard';
 
 export default function HomeScreen() {
-  const { navigateTo, products } = useNavigation();
+  const { navigateTo, products, categories } = useNavigation();
 
   return (
     <main className="min-h-screen bg-[#fbf9f4] pb-24 md:pb-12">
@@ -65,54 +65,35 @@ export default function HomeScreen() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {[
-            {
-              title: 'Krishna Poshakh',
-              desc: 'Silk & Zardozi Attire',
-              screen: SCREENS.KRISHNA_COLLECTION,
-              img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJhjdCw8ciLoxMtgvJ592S5dYPacuWLMeo6Q-IGLkQVGfUdh84426ZPksVvBmDrXyiWeFQYKr1xQEb-MRjOnTCoFxW3kzE1XPk0VkBNgLOSx7wAFBQKgY6IrAKhdszsYfZLYzQBzq5aAgfjVsEdzWANMElvNlNkeoPxuGzuHCpQXcs2WD_B4de8Fuu6j30aPAJI1wY_AO7wbtRbuzNzl6W2t1PfLNkh18GW7rUypH9LYFQdHCyjATmfw'
-            },
-            {
-              title: 'Mukut & Crowns',
-              desc: 'Peacock & Gem Crowns',
-              screen: SCREENS.JEWELLERY,
-              img: 'https://lh3.googleusercontent.com/aida/AEtjO1USSgO_u9Y5UTOuCkzXRtYMyzXk3bcg2wWvBQ99cZGx7qhlWZegaGPd8_68BUfd0CsiIt2-G9N-PpEHGjd_mveiiB6vwxn_zhc7ZcN7B8kHJG8khDFdTg2kg-hQ_V5te9XZ9Et-Q_6Xb7FUotAVg3U18TuDf5Gto7Y6Nvvfn0i3vTN5UWATiRtwGxCyTmrGxz6ZCWC5PxKvVDh_VzY43-ts6hqsgFgwHp8fVblKbpa2VCGp-2Aunib0UdY'
-            },
-            {
-              title: 'Complete Sets',
-              desc: 'Full Shringar Bundles',
-              screen: SCREENS.SHRINGAR_BUNDLES,
-              img: 'https://lh3.googleusercontent.com/aida/AEtjO1URuKw5fosuS0K_1h608p0e9ie-YkwurlaQ81ABAb3ukhxC4I2liy9x1hxkEO-kdoKUrdMVHcF-NtPX6dQ9qWlpHWdFfbSDqcbCvYYxOzaZM8OpcVFBbYVrfEEPy0TWU7bfpS4pjId17FcfnGf-XIZu1A47ko77CdGH25jJHWLiuUkJRBgdt3hA7nKHx6jOcsZxrHML0PHIUe7tfLvh7X3WV8FlBLseFAK0UMA6hXfiX0TtER2AurYore_Z'
-            },
-            {
-              title: 'Jewellery & Flutes',
-              desc: 'Pearl Haar & Bansuri',
-              screen: SCREENS.JEWELLERY,
-              img: 'https://lh3.googleusercontent.com/aida/AEtjO1UoTBK6kJlWjX_3xcpwXGN3P_hFi0kMCCT-lwy8WA5Qq9hSkyKojYs4MtgBhiYayOQh3ngS2XkgR4jwP1vxpCCY2KjU4uDAI7Plhu8GXye-Vnb3Wgy4IUVbQ3nQ_OK-dYtWq3KGe0vX175WaOwmgRL6RUJGbAjIO0usd4RwupBZdBca1d9VgqzEbYO-CdfZ5g1d-Dt0E8paNqtXddMx3MBqCGzwodFEafBIvxV1vor82Rd4QEB4o5LO5qk'
-            }
-          ].map((cat, idx) => (
-            <div
-              key={idx}
-              onClick={() => navigateTo(cat.screen)}
-              className="group relative h-64 md:h-80 rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 border border-[#e4e2dd]"
-            >
-              <img
-                src={cat.img}
-                alt={cat.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#00151b]/90 via-[#00151b]/30 to-transparent flex flex-col justify-end p-4 text-white">
-                <span className="text-[10px] font-bold text-[#fed65b] uppercase tracking-widest">
-                  {cat.desc}
-                </span>
-                <h3 className="text-lg md:text-xl font-serif font-bold mt-1 group-hover:text-[#fed65b] transition-colors">
-                  {cat.title}
-                </h3>
+        {categories.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {categories.map((cat) => (
+              <div
+                key={cat.slug || cat.name}
+                onClick={() => navigateTo(SCREENS.SHOP)}
+                className="group relative h-64 md:h-80 rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 border border-[#e4e2dd]"
+              >
+                <img
+                  src={cat.url || '/placeholder.svg'}
+                  alt={cat.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#00151b]/90 via-[#00151b]/30 to-transparent flex flex-col justify-end p-4 text-white">
+                  <span className="text-[10px] font-bold text-[#fed65b] uppercase tracking-widest">
+                    {cat.description || 'View Items'}
+                  </span>
+                  <h3 className="text-lg md:text-xl font-serif font-bold mt-1 group-hover:text-[#fed65b] transition-colors">
+                    {cat.name}
+                  </h3>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-xs text-[#71787b] py-12">
+            No categories available yet.
+          </div>
+        )}
       </section>
 
       {/* Featured Products */}

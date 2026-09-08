@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 const NavigationContext = createContext(null);
 
@@ -35,84 +36,6 @@ export const SCREENS = {
   ADMIN_USERS: 'admin-users',
 };
 
-export const INITIAL_PRODUCTS = [
-  {
-    id: 'p1',
-    title: 'Divine Zardozi Silk Poshakh - Midnight Krishna',
-    category: 'Krishna Poshakh',
-    price: 3499,
-    originalPrice: 4290,
-    rating: 4.9,
-    reviewsCount: 48,
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJhjdCw8ciLoxMtgvJ592S5dYPacuWLMeo6Q-IGLkQVGfUdh84426ZPksVvBmDrXyiWeFQYKr1xQEb-MRjOnTCoFxW3kzE1XPk0VkBNgLOSx7wAFBQKgY6IrAKhdszsYfZLYzQBzq5aAgfjVsEdzWANMElvNlNkeoPxuGzuHCpQXcs2WD_B4de8Fuu6j30aPAJI1wY_AO7wbtRbuzNzl6W2t1PfLNkh18GW7rUypH9LYFQdHCyjATmfw=s0',
-    tag: 'Bestseller',
-    tagColor: 'gold',
-    sizes: ['No. 0', 'No. 1', 'No. 2', 'No. 3', 'No. 4', 'No. 5', 'No. 6'],
-    colors: ['Krishna Navy', 'Emerald Green', 'Royal Crimson'],
-    description: 'Handcrafted with fine silk threads, 24k gold zardozi embroidery, and delicate Kundan border work. Specially tailored for Laddu Gopal & Krishna deities.'
-  },
-  {
-    id: 'p2',
-    title: 'Mor-Pankh Mukut & Chandrika Set',
-    category: 'Mukut & Jewellery',
-    price: 1850,
-    originalPrice: 2200,
-    rating: 4.8,
-    reviewsCount: 32,
-    image: 'https://lh3.googleusercontent.com/aida/AEtjO1USSgO_u9Y5UTOuCkzXRtYMyzXk3bcg2wWvBQ99cZGx7qhlWZegaGPd8_68BUfd0CsiIt2-G9N-PpEHGjd_mveiiB6vwxn_zhc7ZcN7B8kHJG8khDFdTg2kg-hQ_V5te9XZ9Et-Q_6Xb7FUotAVg3U18TuDf5Gto7Y6Nvvfn0i3vTN5UWATiRtwGxCyTmrGxz6ZCWC5PxKvVDh_VzY43-ts6hqsgFgwHp8fVblKbpa2VCGp-2Aunib0UdY',
-    tag: 'New Arrival',
-    tagColor: 'pink',
-    sizes: ['Small (No. 0-2)', 'Medium (No. 3-4)', 'Large (No. 5-6)'],
-    colors: ['Gold & Peacock Green', 'Gold & Ruby Red'],
-    description: 'Authentic peacock feather embedded crown set with real pearl beads and brass filigree accents.'
-  },
-  {
-    id: 'p3',
-    title: 'Complete Vrindavan Shringar Kit - 11 Pcs',
-    category: 'Shringar Bundles',
-    price: 5999,
-    originalPrice: 7500,
-    rating: 5.0,
-    reviewsCount: 64,
-    image: 'https://lh3.googleusercontent.com/aida/AEtjO1URuKw5fosuS0K_1h608p0e9ie-YkwurlaQ81ABAb3ukhxC4I2liy9x1hxkEO-kdoKUrdMVHcF-NtPX6dQ9qWlpHWdFfbSDqcbCvYYxOzaZM8OpcVFBbYVrfEEPy0TWU7bfpS4pjId17FcfnGf-XIZu1A47ko77CdGH25jJHWLiuUkJRBgdt3hA7nKHx6jOcsZxrHML0PHIUe7tfLvh7X3WV8FlBLseFAK0UMA6hXfiX0TtER2AurYore_Z',
-    tag: 'Complete Set',
-    tagColor: 'gold',
-    sizes: ['No. 2', 'No. 3', 'No. 4', 'No. 5'],
-    colors: ['Full Shringar Set'],
-    description: 'Includes Silk Poshakh, Peacock Mukut, Pearl Haar, Bansuri, Kundal, Payal, and Chandan Paste.'
-  },
-  {
-    id: 'p4',
-    title: 'Floral Velvet Autumn Poshakh - Lotus Pink',
-    category: 'Krishna Poshakh',
-    price: 2890,
-    originalPrice: 3400,
-    rating: 4.7,
-    reviewsCount: 29,
-    image: 'https://lh3.googleusercontent.com/aida/AEtjO1WDRQL7kV4sefxeZs0c6H2eLQO-P0Ief684zKjgK-QAAz30F50V7hZZAnZVA5OXSEx2Fr0AXkcb8WOJA9uEJ2VUTjkctG6D_XjInVXxQrz0uPo-mI1EaGrtb7HQC7WI9IC-0s2koj0eRXWvYhqc58nYfXp8hY801lgb3E1ri9CwAnZTbyrEzmSaqu8CV2h1tDKA6wj-dHSs19_RQGERSMXX0kjlzgA87I5qDhZSMHSbc5FMW21VXoSNoyVt',
-    tag: 'Seasonal',
-    tagColor: 'pink',
-    sizes: ['No. 1', 'No. 2', 'No. 3', 'No. 4'],
-    colors: ['Lotus Pink', 'Temple Gold'],
-    description: 'Soft velvet base with silver zari lotus motif embroidery and satin lining for utmost deity comfort.'
-  },
-  {
-    id: 'p5',
-    title: 'Carved Brass Bansuri with Pearl Tassel',
-    category: 'Mukut & Jewellery',
-    price: 890,
-    originalPrice: 1100,
-    rating: 4.9,
-    reviewsCount: 51,
-    image: 'https://lh3.googleusercontent.com/aida/AEtjO1UoTBK6kJlWjX_3xcpwXGN3P_hFi0kMCCT-lwy8WA5Qq9hSkyKojYs4MtgBhiYayOQh3ngS2XkgR4jwP1vxpCCY2KjU4uDAI7Plhu8GXye-Vnb3Wgy4IUVbQ3nQ_OK-dYtWq3KGe0vX175WaOwmgRL6RUJGbAjIO0usd4RwupBZdBca1d9VgqzEbYO-CdfZ5g1d-Dt0E8paNqtXddMx3MBqCGzwodFEafBIvxV1vor82Rd4QEB4o5LO5qk',
-    tag: 'Essential',
-    tagColor: 'gold',
-    sizes: ['2 inch', '3 inch', '4 inch'],
-    colors: ['Brass Gold'],
-    description: 'Intricately etched divine flute adorned with natural pearls and miniature turquoise beads.'
-  }
-];
-
 export const NavigationProvider = ({ children }) => {
   const [activeScreen, setActiveScreen] = useState(() => {
     if (typeof window !== 'undefined' && window.location.hash.includes('reset-password')) {
@@ -121,31 +44,139 @@ export const NavigationProvider = ({ children }) => {
     return SCREENS.HOME;
   });
   const [returnScreen, setReturnScreen] = useState(null);
-  const [selectedProduct, setSelectedProduct] = useState(INITIAL_PRODUCTS[0]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSize, setSelectedSize] = useState('All');
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [productLoading, setProductLoading] = useState(true);
+  const [categoryLoading, setCategoryLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
-  const [cart, setCart] = useState([
-    {
-      product: INITIAL_PRODUCTS[0],
-      selectedSize: 'No. 3',
-      selectedColor: 'Krishna Navy',
-      quantity: 1
-    },
-    {
-      product: INITIAL_PRODUCTS[1],
-      selectedSize: 'Medium (No. 3-4)',
-      selectedColor: 'Gold & Peacock Green',
-      quantity: 1
-    }
-  ]);
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
 
-  const [wishlist, setWishlist] = useState(['p1', 'p3']);
+  // Fetch products from Supabase on mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, categories (name), product_images (url)')
+          .eq('is_published', true);
+
+        if (error) throw error;
+        const normalized = (data || []).map((p) => ({
+          ...p,
+          category: p.categories?.name || '',
+          image: p.product_images?.[0]?.url || p.image || null
+        }));
+        setProducts(normalized);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setProducts([]);
+      } finally {
+        setProductLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Fetch categories from Supabase on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*');
+
+        if (error) throw error;
+        setCategories(data || []);
+        if (data && data.length > 0) {
+          setSelectedCategory(data[0].name);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setCategories([]);
+      } finally {
+        setCategoryLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Sync user from auth context
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    })();
+  }, []);
+
+  // Fetch cart items for the current user from Supabase
+  useEffect(() => {
+    if (!user) return;
+    const fetchCartItems = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cart_items')
+          .select('id, quantity, created_at, products (id, title, price, colors, product_images (url))')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        setCart((data || []).map((item) => ({
+          id: item.id,
+          product: {
+            id: item.products?.id,
+            title: item.products?.title || '',
+            price: item.products?.price || 0,
+            colors: item.products?.colors || [],
+            image: item.products?.product_images?.[0]?.url || null
+          },
+          selectedSize: 'All',
+          selectedColor: item.products?.colors?.[0] || 'Default',
+          quantity: item.quantity
+        })));
+      } catch (err) {
+        console.error('Error fetching cart items:', err);
+        setCart([]);
+      }
+    };
+
+    fetchCartItems();
+  }, [user]);
+
+  // Fetch wishlist items for the current user from Supabase
+  useEffect(() => {
+    if (!user) return;
+    const fetchWishlistItems = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('wishlist_items')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        setWishlist(data.map((item) => item.product_id) || []);
+      } catch (err) {
+        console.error('Error fetching wishlist items:', err);
+        setWishlist([]);
+      }
+    };
+
+    fetchWishlistItems();
+  }, [user]);
 
   const navigateTo = (screen, extraData = null) => {
     if (extraData?.product) {
       setSelectedProduct(extraData.product);
+    }
+    if (extraData?.orderId) {
+      setSelectedOrderId(extraData.orderId);
     }
     if (extraData?.query) {
       setSearchQuery(extraData.query);
@@ -157,7 +188,7 @@ export const NavigationProvider = ({ children }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const addToCart = (product, size = 'No. 3', color = 'Krishna Navy', qty = 1) => {
+  const addToCart = async (product, size = 'All', qty = 1) => {
     setCart((prev) => {
       const existingIndex = prev.findIndex(
         (item) => item.product.id === product.id && item.selectedSize === size
@@ -167,8 +198,23 @@ export const NavigationProvider = ({ children }) => {
         updated[existingIndex].quantity += qty;
         return updated;
       }
-      return [...prev, { product, selectedSize: size, selectedColor: color, quantity: qty }];
+      return [...prev, { product, selectedSize: size, selectedColor: product.colors?.[0] || 'Default', quantity: qty }];
     });
+
+    // Also save to Supabase cart_items
+    if (user) {
+      try {
+        const { error } = await supabase.from('cart_items').insert({
+          user_id: user.id,
+          product_id: product.id,
+          quantity: qty,
+        });
+
+        if (error) console.error('Error saving to cart:', error);
+      } catch (err) {
+        console.error('Error saving to cart:', err);
+      }
+    }
   };
 
   const updateCartQty = (index, delta) => {
@@ -187,14 +233,97 @@ export const NavigationProvider = ({ children }) => {
     setCart((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const toggleWishlist = (productId) => {
+  const toggleWishlist = async (productId) => {
     setWishlist((prev) =>
       prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
     );
+
+    // Also sync to Supabase wishlist_items
+    if (user) {
+      try {
+        const alreadyInWishlist = wishlist.includes(productId);
+
+        if (alreadyInWishlist) {
+          const { error } = await supabase
+            .from('wishlist_items')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('product_id', productId);
+
+          if (error) console.error('Error removing from wishlist:', error);
+        } else {
+          const { error } = await supabase.from('wishlist_items').insert({
+            user_id: user.id,
+            product_id: productId,
+          });
+
+          if (error) console.error('Error adding to wishlist:', error);
+        }
+      } catch (err) {
+        console.error('Error syncing wishlist:', err);
+      }
+    }
   };
 
-  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const cartSubtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const cartCount = cart.reduce((total, item) => total + (item.quantity || 0), 0);
+  const cartSubtotal = cart.reduce((sum, item) => sum + (item.product?.price || 0) * (item.quantity || 0), 0);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+
+      if (session) {
+        const fetchCartItems = async () => {
+          try {
+            const { data, error } = await supabase
+              .from('cart_items')
+              .select('id, quantity, created_at, products (id, title, price, colors, product_images (url))')
+              .eq('user_id', session.user.id);
+
+            if (error) throw error;
+            setCart((data || []).map((item) => ({
+              id: item.id,
+              product: {
+                id: item.products?.id,
+                title: item.products?.title || '',
+                price: item.products?.price || 0,
+                colors: item.products?.colors || [],
+                image: item.products?.product_images?.[0]?.url || null
+              },
+              selectedSize: 'All',
+              selectedColor: item.products?.colors?.[0] || 'Default',
+              quantity: item.quantity
+            })));
+          } catch (err) {
+            console.error('Error fetching cart after auth change:', err);
+            setCart([]);
+          }
+        };
+
+        const fetchWishlistItems = async () => {
+          try {
+            const { data, error } = await supabase
+              .from('wishlist_items')
+              .select('*')
+              .eq('user_id', session.user.id);
+
+            if (error) throw error;
+            setWishlist(data.map((item) => item.product_id) || []);
+          } catch (err) {
+            console.error('Error fetching wishlist after auth change:', err);
+            setWishlist([]);
+          }
+        };
+
+        await fetchCartItems();
+        await fetchWishlistItems();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user]);
 
   return (
     <NavigationContext.Provider
@@ -206,12 +335,20 @@ export const NavigationProvider = ({ children }) => {
         setReturnScreen,
         selectedProduct,
         setSelectedProduct,
+        selectedOrderId,
+        setSelectedOrderId,
         searchQuery,
         setSearchQuery,
         selectedCategory,
         setSelectedCategory,
         selectedSize,
         setSelectedSize,
+        products,
+        setProducts,
+        categories,
+        setCategories,
+        productLoading,
+        categoryLoading,
         cart,
         cartCount,
         cartSubtotal,
@@ -220,7 +357,8 @@ export const NavigationProvider = ({ children }) => {
         removeFromCart,
         wishlist,
         toggleWishlist,
-        products: INITIAL_PRODUCTS
+        user,
+        userSet: setUser !== undefined
       }}
     >
       {children}

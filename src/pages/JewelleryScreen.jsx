@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigation } from '../context/NavigationContext';
 import ProductCard from '../components/ProductCard';
 
 export default function JewelleryScreen() {
   const { products } = useNavigation();
 
-  // Filter Jewellery & Mukut products
-  const jewelleryProducts = products.filter(
-    (p) => p.category === 'Mukut & Jewellery' || p.id === 'p2' || p.id === 'p5'
+  // Filter for Mukut & Jewellery category products
+  const jewelleryProducts = useMemo(
+    () => products.filter((p) => p.category?.includes('Jewellery') || p.category?.includes('Mukut')),
+    [products]
   );
 
   return (
@@ -53,9 +54,15 @@ export default function JewelleryScreen() {
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jewelleryProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {jewelleryProducts.length === 0 ? (
+            <div className="sm:col-span-2 lg:col-span-3 py-16 text-center text-sm text-[#41484b] bg-white rounded-xl border border-[#e4e2dd]">
+              No products available yet.
+            </div>
+          ) : (
+            jewelleryProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          )}
         </div>
       </section>
     </main>

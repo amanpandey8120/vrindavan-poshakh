@@ -189,7 +189,7 @@ export default function SignupScreen() {
                   required
                   disabled={isSubmitting}
                   className="w-full bg-[#fbf9f4] border-0 border-b border-[#00151b]/30 text-sm text-[#00151b] focus:ring-0 focus:border-[#735c00] focus:border-b-2 py-2 px-1 outline-none transition-colors disabled:opacity-50"
-                  placeholder="Aarav Sharma"
+                  placeholder="Devotee Name"
                 />
               </div>
 
